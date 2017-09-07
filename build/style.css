@@ -1,0 +1,17 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: rgb(233, 255, 200);
+}
+
+.app-container {
+  margin: 20px;
+}
+
+.new-todo-input {
+  background-color: rgb(200, 255, 233);
+}
+
+.new-todo-input input{
+ margin: 20px;
+}
