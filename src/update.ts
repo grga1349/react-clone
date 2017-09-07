@@ -1,12 +1,6 @@
-import {
-  Element
-} from './element';
+import { Element } from './element';
 
-import {
-  TYPE_COMPONENT,
-  TYPE_STRING,
-  TYPE_ELEMENT
-} from './constants';
+import { TYPE_COMPONENT, TYPE_STRING, TYPE_ELEMENT } from './constants';
 
 import {
   isString,
@@ -17,15 +11,9 @@ import {
   notNullOrUndefined
 } from './utils';
 
-import {
-  mount,
-  mountProp
-} from './mount';
+import { mount, mountProp } from './mount';
 
-import {
-  unmount,
-  unmountProp
-} from './unmount';
+import { unmount, unmountProp } from './unmount';
 
 function update(
   parentDom: HTMLElement,
@@ -57,7 +45,7 @@ function update(
             replace(parentDom, prevElement, nextElement);
           }
         } else {
-          throw(`Element type has to be Component instance or string!`);
+          throw `Element type has to be Component instance or string!`;
         }
       } catch (error) {
         console.error(error);
@@ -82,10 +70,7 @@ function replace(
   prevElement = nextElement;
 }
 
-function patchTextElement(
-  prevElement: any,
-  nextElement: Element
-) {
+function patchTextElement(prevElement: any, nextElement: Element) {
   prevElement.dom.nodeValue = nextElement.type as string;
   prevElement = Object.assign({}, prevElement, nextElement);
 }
@@ -122,10 +107,7 @@ function patchProps(
   prevElement: Element,
   nextElement: Element
 ) {
-  const propKeys = onlyUniquePropKeys(
-    prevElement.props,
-    nextElement.props
-  );
+  const propKeys = onlyUniquePropKeys(prevElement.props, nextElement.props);
 
   propKeys.forEach((key: string) => {
     const areEqual = arePropsEqual(
@@ -136,7 +118,7 @@ function patchProps(
     const isNext = notNullOrUndefined(nextElement.props[key]);
     const isNextFunction = isFunction(nextElement.props[key]);
 
-    if ((!isPrev && isNext)) {
+    if (!isPrev && isNext) {
       mountProp(parentDom, key, nextElement.props[key]);
     } else if (isPrev && !isNext) {
       unmountProp(parentDom, key, prevElement.props[key]);
@@ -161,7 +143,7 @@ function patchChildren(
     nextElement.props.children.length
   );
 
-  for (let i = 0; i < max; i ++) {
+  for (let i = 0; i < max; i++) {
     const isPrev = notNullOrUndefined(prevElement.props.children[i]);
     const isNext = notNullOrUndefined(nextElement.props.children[i]);
 
@@ -172,21 +154,13 @@ function patchChildren(
         nextElement.props.children[i]
       );
     } else if (isPrev && !isNext) {
-      unmount(
-        prevElement.props.children[i],
-        parentDom
-      );
+      unmount(prevElement.props.children[i], parentDom);
       prevElement.props.children[i] = nextElement.props.children[i];
     } else if (!isPrev && isNext) {
-      mount(
-        nextElement.props.children[i],
-        parentDom
-      );
+      mount(nextElement.props.children[i], parentDom);
       prevElement.props.children[i] = nextElement.props.children[i];
     }
   }
 }
 
-export {
-  update
-};
+export { update };

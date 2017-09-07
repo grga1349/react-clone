@@ -30,17 +30,18 @@ function mount(element: any, parentDom: HTMLElement) {
       } else if (element.flag === TYPE_ELEMENT) {
         mountElement(element, parentDom);
       } else {
-        throw(`Element type has to be Component instance or string!`);
+        throw (`Element type has to be Component instance or string!`);
       }
     } catch (error) {
       console.error(error);
-      console.log(element);
     }
+
   }
 }
 
 function mountComponent(element: any, parentDom: HTMLElement) {
   const instance = new element.type(element.props);
+
   if (isFunction(instance.componentWillMount)) {
     instance.componentWillMount();
   }
@@ -59,10 +60,12 @@ function mountComponent(element: any, parentDom: HTMLElement) {
 }
 
 function mountElement(element: any, parentDom: HTMLElement) {
-  element.dom = document.createElement(element.type as any);
+  element.dom = document
+    .createElement(element.type as any);
   mountChildren(element);
   mountProps(element);
-  parentDom.appendChild(element.dom as Node);
+  parentDom
+    .appendChild(element.dom as Node);
 }
 
 function mountTextElement(element: any, parentDom: HTMLElement) {
