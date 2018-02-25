@@ -1,6 +1,4 @@
-import {
-  TYPE_STRING
-} from './constants';
+import { TYPE_STRING } from './constants';
 
 function isArray(arg: any) {
   return Array.isArray(arg);
@@ -30,8 +28,8 @@ function flattenArray(args: Array<any>) {
   return [].concat.apply([], args);
 }
 
-function notNullOrUndefined(arg: any) {
-  return arg !== undefined && arg != null;
+function nullOrUndefined(arg: any) {
+  return arg === undefined || arg == null;
 }
 
 function eventKey(key: string) {
@@ -41,17 +39,20 @@ function eventKey(key: string) {
 }
 
 function normalizeTextElement(element: any) {
-  element = {
+  return {
     type: element,
     flag: TYPE_STRING
   };
-  return element;
 }
 
 function onlyUniquePropKeys(prevProps: any, nextProps: any) {
   return Object.keys(
     {...prevProps, ...nextProps}
   );
+}
+
+function shouldNormalize(element: any) {
+  return isString(element) || isNumber(element);
 }
 
 export {
@@ -62,8 +63,9 @@ export {
   isFunction,
   forKey,
   flattenArray,
-  notNullOrUndefined,
+  nullOrUndefined,
   eventKey,
   normalizeTextElement,
+  shouldNormalize,
   onlyUniquePropKeys
 };

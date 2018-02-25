@@ -1,38 +1,25 @@
-import {
-  TYPE_COMPONENT,
-} from './constants';
-
-import {
-  Element
-} from './element';
-
-import {
-  update
-} from './update';
-
-import {
-  unmount
-} from './unmount';
-
-import {
-  notNullOrUndefined
-} from './utils';
+import { TYPE_COMPONENT } from './constants';
+import { Element } from './element';
+import { update } from './update';
+import { unmount } from './unmount';
+import { nullOrUndefined, isFunction } from './utils';
 
 abstract class Component <Props, State> {
 
-  static flag: string = TYPE_COMPONENT;
+  static readonly flag: string = TYPE_COMPONENT;
   public props: Props;
   public state: State;
   public element: Element;
+  public componentWillMount?(): void;
+  public componentDidMount?(): void;
+  public abstract render(): any;
 
   constructor(props: Props) {
     this.props = props;
   }
 
-  public componentWillMount?(): void;
-  public componentDidMount?(): void;
-
   public setState(partialState: Object) {
+    console.log('STATE: ', this.state);
     this.updateComponent(
       null as any,
       {
@@ -44,25 +31,45 @@ abstract class Component <Props, State> {
 
   public componentWillReciveProps?(props: Props): void;
 
+  private setNewProps(newProps: Props) {
+    if (nullOrUndefined(newProps)) {
+      return;
+    }
+
+    if (isFunction(this.componentWillReciveProps)) {
+      this.componentWillReciveProps(newProps);
+    }
+
+    this.props = newProps;
+  }
+
+  private setNewState(newState: State) {
+    if (nullOrUndefined(newState)) {
+      return;
+    }
+
+    this.state = newState;
+  }
+
+  private getParentElement() {
+    if (nullOrUndefined(this.element.dom)) {
+      return null;
+    }
+
+    return this.element.dom.parentElement;
+  }
+
   public updateComponent(props: Props, state: State) {
-    if (notNullOrUndefined(props)) {
-      this.componentWillReciveProps
-        && this.componentWillReciveProps(props as any);
-      this.props = props;
-    }
-    if (notNullOrUndefined(state)) {
-      this.state = state;
-    }
-    const parentElement = this.element.dom
-      && this.element.dom.parentElement;
+    this.setNewProps(props);
+    this.setNewState(state);
+
     update(
-      parentElement as any,
+      this.getParentElement() as any,
       this.element,
       this.render()
     );
   }
 
-  public abstract render(): any;
 
   public setElement(element: Element) {
     this.element = element;
@@ -71,11 +78,11 @@ abstract class Component <Props, State> {
   public componentWillUnmount?(): void;
 
   public unmountSelf() {
-    this.componentWillUnmount
-      && this.componentWillUnmount();
-    const parentElement = this.element.dom
-      && this.element.dom.parentElement;
-    unmount(this.element, parentElement as any);
+    if (isFunction(this.componentWillUnmount)) {
+      this.componentWillUnmount();
+    }
+
+    unmount(this.element, this.getParentElement() as any);
   }
 
 }

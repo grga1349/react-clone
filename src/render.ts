@@ -1,27 +1,17 @@
-import {
-  Element
-} from './element';
-
-import {
-  notNullOrUndefined,
-} from './utils';
-
-import {
-  mount
-} from './mount';
+import { Element } from './element';
+import { nullOrUndefined, } from './utils';
+import { mount } from './mount';
 
 function render(element: Element, parentDom: HTMLElement | null) {
-  try {
-    if (!notNullOrUndefined(element)) {
-      throw(`JSX Element can't be null or undefined!`);
-    }
-    if (!notNullOrUndefined(parentDom)) {
-      throw(`Parent DOM Element can't be null or undefined!`);
-    }
-    mount(element, parentDom as HTMLElement);
-  } catch (error) {
-    console.error(error);
+  if (nullOrUndefined(element)) {
+    console.error(`JSX Element can't be null or undefined!`);
   }
+
+  if (nullOrUndefined(parentDom)) {
+    console.error(`Parent DOM Element can't be null or undefined!`);
+  }
+
+  mount(element, parentDom as HTMLElement);
 }
 
 export {

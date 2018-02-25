@@ -1,11 +1,5 @@
-import {
-  TYPE_COMPONENT,
-} from './constants';
-
-import {
-  isFunction,
-  eventKey
-} from './utils';
+import { TYPE_COMPONENT } from './constants';
+import { isFunction, eventKey } from './utils';
 
 function unmount(element: any, parentDom: HTMLElement) {
   if (element.flag === TYPE_COMPONENT) {
@@ -21,6 +15,7 @@ function unmountComponent(element: any) {
 }
 
 function unmountOther(element: any, parentDom: HTMLElement) {
+  console.log('ELEMENT: ', element);
   parentDom.removeChild(element.dom);
 }
 
@@ -33,7 +28,6 @@ function unmountProp(dom: HTMLElement, key: string, prop: any) {
     dom.removeAttribute(key);
   }
 }
-
 
 export {
   unmount,

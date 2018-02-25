@@ -1,57 +1,52 @@
+import { mount, mountProp } from './mount';
+import { unmount, unmountProp } from './unmount';
 import { Element } from './element';
-
 import { TYPE_COMPONENT, TYPE_STRING, TYPE_ELEMENT } from './constants';
-
 import {
-  isString,
-  isNumber,
   isFunction,
   normalizeTextElement,
+  shouldNormalize,
   onlyUniquePropKeys,
-  notNullOrUndefined
+  nullOrUndefined
 } from './utils';
-
-import { mount, mountProp } from './mount';
-
-import { unmount, unmountProp } from './unmount';
 
 function update(
   parentDom: HTMLElement,
   prevElement: Element,
   nextElement: Element
 ) {
-  if (isString(nextElement) || isNumber(nextElement)) {
+  if (shouldNormalize(nextElement)) {
     update(parentDom, prevElement, normalizeTextElement(nextElement) as any);
-  } else {
-    if (prevElement !== nextElement) {
-      try {
-        if (nextElement.flag === TYPE_STRING) {
-          if (prevElement.flag === TYPE_STRING) {
-            patchTextElement(prevElement, nextElement);
-          } else {
-            replace(parentDom, prevElement, nextElement);
-          }
-        } else if (nextElement.flag === TYPE_COMPONENT) {
-          console.log('updating component');
-          if (prevElement.flag === TYPE_COMPONENT) {
-            patchComponent(parentDom, prevElement, nextElement);
-          } else {
-            replace(parentDom, prevElement, nextElement);
-          }
-        } else if (nextElement.flag === TYPE_ELEMENT) {
-          if (prevElement.flag === TYPE_ELEMENT) {
-            patchElement(parentDom, prevElement, nextElement);
-          } else {
-            replace(parentDom, prevElement, nextElement);
-          }
-        } else {
-          throw `Element type has to be Component instance or string!`;
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
+    return;
   }
+
+  if (prevElement === nextElement) {
+    return;
+  }
+
+  if (nextElement.flag !== prevElement.flag) {
+    replace(parentDom, prevElement, nextElement);
+    return;
+  }
+
+  if (prevElement.flag === TYPE_STRING) {
+    patchTextElement(prevElement, nextElement);
+    return;
+  }
+
+  if (prevElement.flag === TYPE_COMPONENT) {
+    patchComponent(parentDom, prevElement, nextElement);
+    return;
+  }
+
+  if (prevElement.flag === TYPE_ELEMENT) {
+    patchElement(parentDom, prevElement, nextElement);
+    return;
+  }
+
+  console.error(
+    `Element type has to be Component instance or string!`
+  );
 }
 
 function replace(
@@ -59,9 +54,9 @@ function replace(
   prevElement: Element,
   nextElement: Element
 ) {
-  if (!notNullOrUndefined(prevElement)) {
+  if (nullOrUndefined(prevElement)) {
     mount(nextElement, parentDom);
-  } else if (!notNullOrUndefined(nextElement)) {
+  } else if (nullOrUndefined(nextElement)) {
     unmount(prevElement, parentDom);
   } else {
     unmount(prevElement, parentDom);
@@ -114,8 +109,8 @@ function patchProps(
       prevElement.props[key],
       nextElement.props[key]
     );
-    const isPrev = notNullOrUndefined(prevElement.props[key]);
-    const isNext = notNullOrUndefined(nextElement.props[key]);
+    const isPrev = !nullOrUndefined(prevElement.props[key]);
+    const isNext = !nullOrUndefined(nextElement.props[key]);
     const isNextFunction = isFunction(nextElement.props[key]);
 
     if (!isPrev && isNext) {
@@ -144,8 +139,8 @@ function patchChildren(
   );
 
   for (let i = 0; i < max; i++) {
-    const isPrev = notNullOrUndefined(prevElement.props.children[i]);
-    const isNext = notNullOrUndefined(nextElement.props.children[i]);
+    const isPrev = !nullOrUndefined(prevElement.props.children[i]);
+    const isNext = !nullOrUndefined(nextElement.props.children[i]);
 
     if (isPrev && isNext) {
       update(

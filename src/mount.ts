@@ -1,42 +1,35 @@
 import {
-  TYPE_COMPONENT,
-  TYPE_STRING,
-  TYPE_ELEMENT
-} from './constants';
-
-import {
-  Element
-} from './element';
-
-import {
-  notNullOrUndefined,
-  forKey,
   isFunction,
   eventKey,
-  isString,
-  isNumber,
+  shouldNormalize,
   normalizeTextElement
 } from './utils';
+import { TYPE_COMPONENT, TYPE_STRING, TYPE_ELEMENT } from './constants';
+import { Element } from './element';
+
 
 function mount(element: any, parentDom: HTMLElement) {
-  if (isString(element) || isNumber(element)) {
+  if (shouldNormalize(element)) {
     mount(normalizeTextElement(element) as any, parentDom);
-  } else {
-    try {
-      if (element.flag === TYPE_STRING) {
-        mountTextElement(element, parentDom);
-      } else if (element.flag === TYPE_COMPONENT) {
-        mountComponent(element, parentDom);
-      } else if (element.flag === TYPE_ELEMENT) {
-        mountElement(element, parentDom);
-      } else {
-        throw (`Element type has to be Component instance or string!`);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-
+    return;
   }
+
+  if (element.flag === TYPE_STRING) {
+    mountTextElement(element, parentDom);
+    return;
+  }
+
+  if (element.flag === TYPE_COMPONENT) {
+    mountComponent(element, parentDom);
+    return;
+  }
+
+  if (element.flag === TYPE_ELEMENT) {
+    mountElement(element, parentDom);
+    return;
+  }
+
+  console.error(`Element type has to be Component instance or string!`);
 }
 
 function mountComponent(element: any, parentDom: HTMLElement) {
@@ -45,27 +38,28 @@ function mountComponent(element: any, parentDom: HTMLElement) {
   if (isFunction(instance.componentWillMount)) {
     instance.componentWillMount();
   }
+
   const instanceElement = instance.render();
 
-  instanceElement.dom = document
-    .createElement(instanceElement.type as any);
+  instanceElement.dom = document.createElement(instanceElement.type as any);
+
   mountChildren(instanceElement);
   mountProps(instanceElement);
   parentDom.appendChild(instanceElement.dom);
   instance.setElement(instanceElement);
   element.instance = instance;
+
   if (isFunction(instance.componentDidMount)) {
     instance.componentDidMount();
   }
 }
 
 function mountElement(element: any, parentDom: HTMLElement) {
-  element.dom = document
-    .createElement(element.type as any);
+  element.dom = document .createElement(element.type as any);
+
   mountChildren(element);
   mountProps(element);
-  parentDom
-    .appendChild(element.dom as Node);
+  parentDom.appendChild(element.dom as Node);
 }
 
 function mountTextElement(element: any, parentDom: HTMLElement) {
@@ -74,21 +68,21 @@ function mountTextElement(element: any, parentDom: HTMLElement) {
 }
 
 function mountChildren(element: Element) {
-  element.props.children
-    .filter(notNullOrUndefined)
-    .forEach((child: any, index: string) => {
-      if (isString(child) || isNumber(child)) {
-        child = normalizeTextElement(child);
-        element.props.children[index] = child;
-      }
-      mount(child, element.dom as any);
-    });
+  for (let key in element.props.children) {
+    if (shouldNormalize(element.props.children[key])) {
+      element.props.children[key] = normalizeTextElement(
+        element.props.children[key]
+      );
+    }
+
+    mount(element.props.children[key], element.dom as any);
+  }
 }
 
 function mountProps(element: any) {
-  forKey(element.props, (key: string) => {
+  for (let key in element.props) {
     mountProp(element.dom, key, element.props[key]);
-  });
+  }
 }
 
 function mountProp(dom: HTMLElement, key: string, prop: any) {
